@@ -1,6 +1,17 @@
 <?php
 	session_start();
 	include("./settings/connect_datebase.php");
+	if (isset($_SESSION['user'])) {
+		if($_SESSION['user'] != -1) {
+			$user_to_query = $mysqli->query("SELECT * FROM `users` WHERE `id` = ".$_SESSION['user']);
+			$user_to_read = $user_to_query->fetch_row();
+			
+			if($_SESSION['token'] != $user_to_read[4]) {
+				session_destroy();
+				header("Location: index.php");
+			}
+		}
+ 	} else header("Location: login.php");
 ?>
 <!DOCTYPE HTML>
 <html>
