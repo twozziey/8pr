@@ -1,5 +1,6 @@
 <?php
 	session_start();
+	session_destroy();
 	include("./settings/connect_datebase.php");
 	
 	if (isset($_SESSION['user'])) {
@@ -58,65 +59,61 @@
 		
 		<script>
 			function LogIn() {
-				var loading = document.getElementsByClassName("loading")[0];
-				var button = document.getElementsByClassName("button")[0];
-				
-				var _login = document.getElementsByName("_login")[0].value;
-				var _password = document.getElementsByName("_password")[0].value;
-				loading.style.display = "block";
-				button.className = "button_diactive";
-				
-				var data = new FormData();
-				data.append("login", _login);
-				data.append("password", _password);
-				
-				// AJAX запрос
-				$.ajax({
-					url         : 'ajax/login_user.php',
-					type        : 'POST', // важно!
-					data        : data,
-					cache       : false,
-					dataType    : 'html',
-					// отключаем обработку передаваемых данных, пусть передаются как есть
-					processData : false,
-					// отключаем установку заголовка типа запроса. Так jQuery скажет серверу что это строковой запрос
-					contentType : false, 
-					// функция успешного ответа сервера
-					success: function (_data) {
-						console.log("Авторизация прошла успешно, id: " +_data);
-						if(_data == "") {
-							loading.style.display = "none";
-							button.className = "button";
-							alert("Логин или пароль не верный.");
-						} else {
-							localStorage.setItem("token", _data);
-							location.reload();
-							loading.style.display = "none";
-							button.className = "button";
-						}
-					},
-					// функция ошибки
-					error: function( ){
-						console.log('Системная ошибка!');
-						loading.style.display = "none";
-						button.className = "button";
-					}
-				});
+    			var loading = document.getElementsByClassName("loading")[0];
+    			var button = document.getElementsByClassName("button")[0];
+
+    			var _login = document.getElementsByName("_login")[0].value.trim();
+    			var _password = document.getElementsByName("_password")[0].value;
+
+    			if(!_login || !_password) {
+    			    alert("Введите логин и пароль");
+    			    return;
+    			}
+
+    			loading.style.display = "block";
+    			button.disabled = true;
+    			button.className = "button_diactive";
+
+    			var data = new FormData();
+    			data.append("login", _login);
+    			data.append("password", _password);
+    
+    			$.ajax({
+        			url: 'ajax/login_user.php',
+        			type: 'POST',
+        			data: data,
+        			cache: false,
+        			dataType: 'html',
+        			processData: false,
+        			contentType: false,
+        			success: function(response) {
+        			    loading.style.display = "none";
+        			    button.disabled = false;
+        			    button.className = "button";
+
+        			    console.log("Ответ сервера:", response);
+
+        			    if(response === "") {
+        			        alert("Логин или пароль неверный");
+        			        document.getElementsByName("_login")[0].focus();
+        			    } else {
+        			        // Успешная авторизация - переходим на mail.php
+        			        window.location.href = "mail.php";
+        			    }
+        			},
+        			error: function(xhr, status, error) {
+        			    console.log('Ошибка AJAX:', error);
+        			    loading.style.display = "none";
+        			    button.disabled = false;
+        			    button.className = "button";
+        			    alert('Ошибка соединения');
+        			}
+    			});
 			}
-			
+
 			function PressToEnter(e) {
-				if (e.keyCode == 13) {
-					var _login = document.getElementsByName("_login")[0].value;
-					var _password = document.getElementsByName("_password")[0].value;
-					
-					if(_password != "") {
-						if(_login != "") {
-							LogIn();
-						}
-					}
-				}
+			    if(e.keyCode == 13) LogIn();
 			}
-			
 		</script>
 	</body>
 </html>
