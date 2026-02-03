@@ -9,6 +9,8 @@
 
 	if($CheckPassword == false)
 		exit;
+
+	$password = password_hash($password, PASSWORD_DEFAULT);
 	
 	// ищем пользователя
 	$query_user = $mysqli->query("SELECT * FROM `users` WHERE `login`='".$login."'");
